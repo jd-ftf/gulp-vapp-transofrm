@@ -1,7 +1,7 @@
 {
   "name": "@ftf/gulp-vapp-transform",
-  "version": "1.0.0",
-  "description": "JD WeChat Mini Program Interchange Utils",
+  "version": "1.0.1",
+  "description": "A gulp plugin for Vapp and Weapp.",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"

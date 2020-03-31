@@ -1,5 +1,4 @@
 const { src, dest } = require('gulp')
-const path = require('path')
 const fs = require('fs')
 const sass = require('gulp-sass')
 const postcss = require('gulp-postcss')
@@ -11,12 +10,14 @@ const pipeline = require('readable-stream').pipeline
 const rename = require('gulp-rename')
 const filter = require('gulp-filter')
 const strReplace = require('./utils/gulp-replace')
-const preprocess = require("gulp-preprocess")
+const preprocess = require('gulp-preprocess')
 
 const PLUGIN_NAME = 'gulp-transform-vapp'
 
 // 平台类型，如果是wx 那么是从京东转微信   如果是jd那么从微信转京东
 const platform = process.env.PLATFORM
+
+// html 替换逻辑
 const htmlReg = [
   {
     replaceStr: `\\.${platform === 'wx' ? 'jxs' : 'wxs'}`,
@@ -29,11 +30,13 @@ const htmlReg = [
     str: `${platform === 'wx' ? 'wx' : 'jd'}:`
   }
 ]
+
+// 文件检测
 function fileCheck (entry, dirname, ext) {
   const dir = `${entry}/${dirname !== '.' ? dirname : ''}`
   const files = fs.readdirSync(dir).filter(f => f.endsWith(ext))
 
-  let err = {
+  const err = {
     dir
   }
   let hasBaseFile = false
@@ -52,24 +55,30 @@ function fileCheck (entry, dirname, ext) {
     console.log(`\n Warning Message - ${PLUGIN_NAME}：\n 检测到当前文件夹 --- ${err.dir}  \n 已经存在 ${err.fileName}!`)
   }
 }
-const htmlTransform = (entry, toPath) => {
+
+/**
+ * html Task
+ * @param entry 入口文件全路径
+ * @param toPath 生成文件全路径
+ * @param replaceExt 被解析替换的后缀名
+ */
+const htmlTransform = (entry, toPath, replaceExt) => {
   if (!entry || !toPath) {
     throw Error(`\n Error Message - ${PLUGIN_NAME}：\n entry path or dist path can not be empty !`)
   }
 
   const ext = platform === 'wx' ? 'wxml' : 'jxml'
-  const pre = entry + '/**/*.jxml'
+  const pre = `${entry}/**/*${replaceExt}`
   const srcPath = [pre]
-
-  const platFilter = filter([`${entry}/**`, `!${entry}/**/*.${platform === 'wx' ? 'jd' : 'wx'}.jxml`])
+  const platFilter = filter([`${entry}/**`, `!${entry}/**/*.${platform === 'wx' ? 'jd' : 'wx'}${replaceExt}`])
 
   const replaceTask = (htmlReg || []).map(item => {
     return strReplace(item.replaceStr, item.str)
   })
 
   replaceTask.push(rename(path => {
-    const { basename, dirname, extname } = path
-    fileCheck(entry, dirname, '.jxml')
+    const { basename, dirname } = path
+    fileCheck(entry, dirname, replaceExt)
 
     if (basename.indexOf('.jd') > -1 || basename.indexOf('.wx') > -1) {
       path.basename = basename.replace(basename.indexOf('.jd') > -1 ? '.jd' : '.wx', '')
@@ -93,7 +102,13 @@ const htmlTransform = (entry, toPath) => {
   }
 }
 
-const jsTransform = (entry, toPath) => {
+/**
+ * JS Task
+ * @param entry 入口文件全路径
+ * @param toPath 生成文件全路径
+ * @param openBabel 是否开启babel
+ */
+const jsTransform = (entry, toPath, openBabel = true) => {
   if (!entry || !toPath) {
     throw Error(`\n Error Message - ${PLUGIN_NAME}：\n entry path or dist path can not be empty !`)
   }
@@ -101,12 +116,8 @@ const jsTransform = (entry, toPath) => {
   const srcPath = [entry + '/**/*.js']
   const replaceStr = platform === 'wx' ? 'jd' : 'wx'
   const str = platform === 'wx' ? 'wx' : 'jd'
-  const babelConfig = {
-    presets: ['@babel/env']
-  }
-
   const changeName = rename(path => {
-    const { basename, dirname, extname } = path
+    const { basename, dirname } = path
     // 文件检测
     fileCheck(entry, dirname, '.js')
 
@@ -116,6 +127,8 @@ const jsTransform = (entry, toPath) => {
   })
 
   const platFilter = filter([`${entry}/**`, `!${entry}/**/*.${platform === 'wx' ? 'jd' : 'wx'}.js`])
+  const replaceTask = []
+  openBabel && replaceTask.push(babel({ presets: ['@babel/env'] }))
 
   return () => {
     return pipeline(
@@ -128,35 +141,40 @@ const jsTransform = (entry, toPath) => {
         }
       }),
       strReplace(replaceStr, str),
-      babel(babelConfig),
+      ...replaceTask,
       changeName,
       dest(toPath)
     )
   }
 }
 
-const styleTransform = (entry, toPath) => {
+/**
+ * CSS Task
+ * @param entry 入口文件全路径
+ * @param toPath 生成文件全路径
+ * @param replaceExt 被解析替换的后缀名
+ */
+const styleTransform = (entry, toPath, replaceExt) => {
   if (!entry || !toPath) {
     throw Error(`\n Error Message - ${PLUGIN_NAME}：\n entry path or dist path can not be empty !`)
   }
 
-  const srcPath = [entry + '/**/*.scss']
+  const srcPath = [`${entry}/**/*${replaceExt}`]
   const ext = platform === 'wx' ? 'wxss' : 'jxss'
 
+  const replaceTask = []
+  replaceExt === '.scss' && replaceTask.push(sass().on('error', sass.logError))
+
   return () => {
-    return src(srcPath)
-      .pipe(sass().on('error', sass.logError))
-      .pipe(base64({
-        extensions: ['ttf']
-      }))
-      .pipe(postcss([autoprefixer()]))
-      .pipe(cssnano({
-        discardComments: { removeAll: true }
-      }))
-      .pipe(rename(toPath => {
-        toPath.extname = `.${ext}`
-      }))
-      .pipe(dest(toPath))
+    return pipeline(
+      src(srcPath),
+      ...replaceTask,
+      base64({ extensions: ['ttf'] }),
+      postcss([autoprefixer()]),
+      cssnano({ discardComments: { removeAll: true } }),
+      rename(toPath => { toPath.extname = `.${ext}` }),
+      dest(toPath)
+    )
   }
 }
 
