@@ -33,9 +33,9 @@ const htmlReg = [
 
 // 文件检测
 function fileCheck (entry, dirname, ext) {
+  // 不带.
   const dir = `${entry}/${dirname !== '.' ? dirname : ''}`
   const files = fs.readdirSync(dir).filter(f => f.endsWith(ext))
-
   const err = {
     dir
   }
@@ -43,7 +43,7 @@ function fileCheck (entry, dirname, ext) {
   let hasPlatFile = false
 
   files.forEach(file => {
-    if (file.indexOf('.jd' + ext) === -1 && file.indexOf('.wx' + ext) === -1) {
+    if (file.indexOf('.jd.' + ext) === -1 && file.indexOf('.wx.' + ext) === -1) {
       hasBaseFile = true
       err.fileName = file
     } else {
@@ -61,16 +61,17 @@ function fileCheck (entry, dirname, ext) {
  * @param entry 入口文件全路径
  * @param toPath 生成文件全路径
  * @param replaceExt 被解析替换的后缀名
+ * @param toExt 生成目标后缀名,若定义该变量，则生成该后缀，若没有定义，按照生成平台判断生成目标后缀
  */
-const htmlTransform = (entry, toPath, replaceExt) => {
+const htmlTransform = (entry, toPath, replaceExt, toExt) => {
   if (!entry || !toPath) {
     throw Error(`\n Error Message - ${PLUGIN_NAME}：\n entry path or dist path can not be empty !`)
   }
 
-  const ext = platform === 'wx' ? 'wxml' : 'jxml'
-  const pre = `${entry}/**/*${replaceExt}`
+  const ext = toExt || (platform === 'wx' ? 'wxml' : 'jxml')
+  const pre = `${entry}/**/*.${replaceExt}`
   const srcPath = [pre]
-  const platFilter = filter([`${entry}/**`, `!${entry}/**/*.${platform === 'wx' ? 'jd' : 'wx'}${replaceExt}`])
+  const platFilter = filter([`${entry}/**`, `!${entry}/**/*.${platform === 'wx' ? 'jd' : 'wx'}.${replaceExt}`])
 
   const replaceTask = (htmlReg || []).map(item => {
     return strReplace(item.replaceStr, item.str)
@@ -108,7 +109,7 @@ const htmlTransform = (entry, toPath, replaceExt) => {
  * @param toPath 生成文件全路径
  * @param openBabel 是否开启babel
  */
-const jsTransform = (entry, toPath, openBabel = true) => {
+const jsTransform = (entry, toPath, openBabel = false) => {
   if (!entry || !toPath) {
     throw Error(`\n Error Message - ${PLUGIN_NAME}：\n entry path or dist path can not be empty !`)
   }
@@ -119,7 +120,7 @@ const jsTransform = (entry, toPath, openBabel = true) => {
   const changeName = rename(path => {
     const { basename, dirname } = path
     // 文件检测
-    fileCheck(entry, dirname, '.js')
+    fileCheck(entry, dirname, 'js')
 
     if (basename.indexOf('.jd') > -1 || basename.indexOf('.wx') > -1) {
       path.basename = basename.replace(basename.indexOf('.jd') > -1 ? '.jd' : '.wx', '')
@@ -153,17 +154,17 @@ const jsTransform = (entry, toPath, openBabel = true) => {
  * @param entry 入口文件全路径
  * @param toPath 生成文件全路径
  * @param replaceExt 被解析替换的后缀名
+ * @param toExt 生成目标后缀名,若定义该变量，则生成该后缀，若没有定义，按照生成平台判断生成目标后缀
  */
-const styleTransform = (entry, toPath, replaceExt) => {
+const styleTransform = (entry, toPath, replaceExt, toExt) => {
   if (!entry || !toPath) {
     throw Error(`\n Error Message - ${PLUGIN_NAME}：\n entry path or dist path can not be empty !`)
   }
 
-  const srcPath = [`${entry}/**/*${replaceExt}`]
-  const ext = platform === 'wx' ? 'wxss' : 'jxss'
-
+  const srcPath = [`${entry}/**/*.${replaceExt}`]
+  const ext = toExt || (platform === 'wx' ? 'wxss' : 'jxss')
   const replaceTask = []
-  replaceExt === '.scss' && replaceTask.push(sass().on('error', sass.logError))
+  replaceExt === 'scss' && replaceTask.push(sass().on('error', sass.logError))
 
   return () => {
     return pipeline(
@@ -178,4 +179,10 @@ const styleTransform = (entry, toPath, replaceExt) => {
   }
 }
 
-module.exports = { htmlTransform, jsTransform, styleTransform }
+const copyNoChange = (entry, toPath) => {
+  return function () {
+    return src(entry)
+      .pipe(dest(toPath))
+  }
+}
+module.exports = { htmlTransform, jsTransform, styleTransform, copyNoChange }
