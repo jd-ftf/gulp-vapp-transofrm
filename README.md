@@ -49,17 +49,17 @@ exports.dev = series(
 * htmlTransform - htl页面处理函数
 * jsTransform - js文件处理函数
 * styleTransform - css样式处理函数（当前预处理语言为scss）
-* **copyNoChange** - （v1.1.2新增）未处理文件直接生成到目标文件夹
+* **`copyNoChange`** - （v1.1.2新增）未处理文件直接生成到目标文件夹
 
-**请在在配置中设置当前环境变量 `process.env. PLATFORM` 为 `wx` 或 `jd` 。**
+注意：*请在在配置中设置当前环境变量 `process.env. PLATFORM` 为 `wx` 或 `jd` 。*
 
-### htmlTransform
+## htmlTransform
 
-**html页面处理task事件:**
+*`html页面处理task事件:`*
 
 *htmlTransform(entryPath, outputPath, replaceExa, toExt)*
 
-#### 参数
+### 参数
 
 | 参数      |    类型 | 描述  | 是否必需 |
 | :--------: | :--------:| :--: | :--: |
@@ -68,9 +68,9 @@ exports.dev = series(
 | replaceExa  | String |  需要解析替换的页面文件的后缀名 | 是 |
 | *toExt (v1.1.2新增)*  | String | 指定生成的文件后缀， 若不设置该值，则走默认规则，即根据 `PLATFORM` 判断 | 否 |
 
-#### 示例
+### 示例
 
-1. 基本用法
+一、基本用法
 
 ``` javascript
 const {
@@ -84,7 +84,7 @@ const htmlTask = () => htmlTransform(entryPath, distPath, 'jxml')()
 
 匹配 `entryPath` 下的所有后缀名为 `jxml` 的文件，如果当前环境变量 `process.env.PLATFORM === 'wx(jd)''` ， 将内部的逻辑转换成 `微信小程序(京东小程序)` 的可执行代码，生成到目标文件夹 `distPath` ，后缀名为 `wxml(jxml)` ；
 
-2. 手动控制
+二、手动控制
 
 除此之外也可以设置定向的生成后缀。
 
@@ -97,13 +97,13 @@ const {
 const htmlTask = () => htmlTransform(entryPath, distPath, 'jxml', 'wxml')()
 ```
 
-### jsTransform
+## jsTransform
 
-**js文件处理task事件:**
+*`js文件处理task事件:`*
 
 *jsTransform(entryPath, outputPath, openBabel)*
 
-#### 参数
+### 参数
 
 | 参数      |    类型 | 描述  | 是否必需 |
 | :--------: | :--------:| :--: | :--: |
@@ -111,7 +111,7 @@ const htmlTask = () => htmlTransform(entryPath, distPath, 'jxml', 'wxml')()
 | outputPath  | String |  生成文件夹的全(绝对)路径   | 是 |
 | openBabel  | Boolean |  是否开启babel编译， 默认值为 `false` | 否 |
 
-#### 示例
+### 示例
 
 ``` javascript
 const {
@@ -125,13 +125,13 @@ const jsTask = () => jsTransform(entryPath, distPath)()
 
 匹配 `entryPath` 下的所有后缀名为 `js` 的文件，如果当前环境变量 `process.env. PLATFORM === 'wx(jd)'` ，将内部的逻辑转换成 `微信小程序(京东小程序)` 的可执行代码，不进行babel编译， 生成到目标文件夹 `distPath` 。
 
-### styleTransform
+## styleTransform
 
-**样式文件处理task事件:**
+*`样式文件处理task事件:`*
 
 *styleTransform(entryPath, outputPath, replaceExa, toExt)*
 
-#### 参数
+### 参数
 
 | 参数      |    类型 | 描述  | 是否必需 |
 | :--------: | :--------:| :--: | :--: |
@@ -140,9 +140,9 @@ const jsTask = () => jsTransform(entryPath, distPath)()
 | replaceExa  | String|  需要解析替换的页面文件的后缀名， 当前支持 `scss / jxss / wxss` | 是 |
 | *toExt (v1.1.2新增)*  | String | 指定生成的文件后缀， 若不设置该值，则走默认规则，即根据 `PLATFORM` 判断 | 否 |
 
-#### 示例
+### 示例
 
-1. 基本用法
+一、 基本用法
 
 ``` javascript
 const {
@@ -156,7 +156,7 @@ const styleTask = () => styleTransform(entryPath, distPath, 'scss')()
 
 匹配 `entryPath` 下的所有后缀名为 `scss` 的文件，如果当前环境变量 `process.env. PLATFORM === 'wx(jd)'` ，后缀名变更为 `wxss(jxss)` ，生成到目标文件夹 `distPath` 。
 
-2. 手动控制
+二、 手动控制
 
 `styleTransform` 也可以设置定向的生成后缀。
 
@@ -169,20 +169,20 @@ const {
 const styleTask = () => styleTransform(entryPath, distPath, 'scss', 'jxss')()
 ```
 
-### copyNoChange
+## copyNoChange
 
-**无修改文件，直接生成到目录(v1.1.2):**
+*`无修改文件，直接生成到目录(v1.1.2):`*
 
 *copyNoChange(entryPath, outputPath)*
 
-#### 参数
+### 参数
 
 | 参数      |    类型 | 描述  | 是否必需 |
 | :--------: | :--------:| :--: | :--: |
 | entryPath  | String |  当前入口文件夹的全(绝对)路径   | 是 |
 | outputPath  | String |  生成文件夹的全(绝对)路径   | 是 |
 
-#### 示例
+### 示例
 
 ``` JavaScript
 const {
