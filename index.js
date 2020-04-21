@@ -11,7 +11,7 @@ const rename = require('gulp-rename')
 const filter = require('gulp-filter')
 const strReplace = require('./utils/gulp-replace')
 const preprocess = require('gulp-preprocess')
-
+const chalk = require('chalk')
 const PLUGIN_NAME = 'gulp-transform-vapp'
 
 // 平台类型，如果是wx 那么是从京东转微信   如果是jd那么从微信转京东
@@ -52,7 +52,7 @@ function fileCheck (entry, dirname, ext) {
   })
 
   if (hasPlatFile && hasBaseFile) {
-    console.log(`\n Warning Message - ${PLUGIN_NAME}：\n 检测到当前文件夹 --- ${err.dir}  \n 已经存在 ${err.fileName}!`)
+    console.log(chalk.red(`\n Warning Message - ${PLUGIN_NAME}：\n 检测到当前文件夹 --- ${err.dir}  \n 已经存在 ${err.fileName}!`))
   }
 }
 
