@@ -60,10 +60,11 @@ function fileCheck (entry, dirname, ext) {
  * html Task
  * @param entry 入口文件全路径
  * @param toPath 生成文件全路径
+ * @param ignoreExpressList 屏蔽表达式列表
  * @param replaceExt 被解析替换的后缀名
  * @param toExt 生成目标后缀名,若定义该变量，则生成该后缀，若没有定义，按照生成平台判断生成目标后缀
  */
-const htmlTransform = (entry, toPath, replaceExt, toExt) => {
+const htmlTransform = (entry, toPath, ignoreExpressList = [], replaceExt, toExt) => {
   if (!entry || !toPath) {
     throw Error(`\n Error Message - ${PLUGIN_NAME}：\n entry path or dist path can not be empty !`)
   }
@@ -71,12 +72,20 @@ const htmlTransform = (entry, toPath, replaceExt, toExt) => {
   const ext = toExt || (platform === 'wx' ? 'wxml' : 'jxml')
   const pre = `${entry}/**/*.${replaceExt}`
   const srcPath = [pre]
-  const platFilter = filter([`${entry}/**`, `!${entry}/**/*.${platform === 'wx' ? 'jd' : 'wx'}.${replaceExt}`])
+  const filterFile = [`${entry}/**`, `!${entry}/**/*.${platform === 'wx' ? 'jd' : 'wx'}.${replaceExt}`]
 
+  ignoreExpressList && ignoreExpressList.length !== 0 && ignoreExpressList.forEach(ifile => {
+    srcPath.push(ifile)
+    filterFile.push(ifile)
+  })
+
+  // 添加过滤，过滤需要转换的路径
+  const platFilter = filter(filterFile)
+  // 京东微信语法互转
   const replaceTask = (htmlReg || []).map(item => {
     return strReplace(item.replaceStr, item.str)
   })
-
+  // 更换后缀名
   replaceTask.push(rename(path => {
     const { basename, dirname } = path
     fileCheck(entry, dirname, replaceExt)
@@ -107,9 +116,10 @@ const htmlTransform = (entry, toPath, replaceExt, toExt) => {
  * JS Task
  * @param entry 入口文件全路径
  * @param toPath 生成文件全路径
+ * @param ignoreExpressList 屏蔽表达式列表
  * @param openBabel 是否开启babel
  */
-const jsTransform = (entry, toPath, openBabel = false) => {
+const jsTransform = (entry, toPath, ignoreExpressList = [], openBabel = false) => {
   if (!entry || !toPath) {
     throw Error(`\n Error Message - ${PLUGIN_NAME}：\n entry path or dist path can not be empty !`)
   }
@@ -126,8 +136,14 @@ const jsTransform = (entry, toPath, openBabel = false) => {
       path.basename = basename.replace(basename.indexOf('.jd') > -1 ? '.jd' : '.wx', '')
     }
   })
+  const filterFile = [`${entry}/**`, `!${entry}/**/*.${platform === 'wx' ? 'jd' : 'wx'}.js`]
 
-  const platFilter = filter([`${entry}/**`, `!${entry}/**/*.${platform === 'wx' ? 'jd' : 'wx'}.js`])
+  ignoreExpressList && ignoreExpressList.length !== 0 && ignoreExpressList.forEach(ifile => {
+    srcPath.push(ifile)
+    filterFile.push(ifile)
+  })
+
+  const platFilter = filter(filterFile)
   const replaceTask = []
   openBabel && replaceTask.push(babel({ presets: ['@babel/env'] }))
 
@@ -153,10 +169,11 @@ const jsTransform = (entry, toPath, openBabel = false) => {
  * CSS Task
  * @param entry 入口文件全路径
  * @param toPath 生成文件全路径
+ * @param ignoreExpressList 屏蔽表达式列表
  * @param replaceExt 被解析替换的后缀名
  * @param toExt 生成目标后缀名,若定义该变量，则生成该后缀，若没有定义，按照生成平台判断生成目标后缀
  */
-const styleTransform = (entry, toPath, replaceExt, toExt) => {
+const styleTransform = (entry, toPath, ignoreExpressList = [], replaceExt, toExt) => {
   if (!entry || !toPath) {
     throw Error(`\n Error Message - ${PLUGIN_NAME}：\n entry path or dist path can not be empty !`)
   }
@@ -165,6 +182,10 @@ const styleTransform = (entry, toPath, replaceExt, toExt) => {
   const ext = toExt || (platform === 'wx' ? 'wxss' : 'jxss')
   const replaceTask = []
   replaceExt === 'scss' && replaceTask.push(sass().on('error', sass.logError))
+
+  ignoreExpressList && ignoreExpressList.length !== 0 && ignoreExpressList.forEach(ifile => {
+    srcPath.push(ifile)
+  })
 
   return () => {
     return pipeline(
