@@ -25,15 +25,16 @@ const {
 } = require('@ftf/gulp-vapp-transform')
 
 // 使用转换方法
-const ignoreList = [`!${entryPath}/ignore/**`] // 屏蔽列表
-const styleTask = () => styleTransform(entryPath, distPath, ignoreList, 'scss')()
-const jsTask = () => jsTransform(entryPath, distPath)()
-const htmlTask = () => htmlTransform(entryPath, distPath, ignoreList, 'jxml')()
+const ignoreList = [`!${entry}/ignore/**`] // 屏蔽列表
+const styleTask = () => styleTransform({ entry, toPath, ignoreExpressList: ignoreList, replaceExt: 'scss' })()
+const jsTask = () => jsTransform({ entry, toPath })()
+const htmlTask = () => htmlTransform({ entry, toPath, ignoreExpressList: ignoreList, replaceExt: 'jxml' })()
+
 const entryCopyPath = [
   `${entry}/**`,
   `!${entry}/**/*.js`,
 ]
-const copy = () => copyNoChange(entryCopyPath, distPath)()
+const copy = () => copyNoChange(entryCopyPath, toPath)()
 
     ...otherTask
 
@@ -58,16 +59,18 @@ exports.dev = series(
 
 *`html页面处理task事件:`*
 
-*htmlTransform(entryPath, outputPath, ignoreExpressList, replaceExa, toExt)*
+*htmlTransform(entry, toPath, ignoreExpressList, replaceExt, toExt)*
 
 ### 参数
 
+参数以对象形式传入，注意名称如下：
+
 | 参数      |    类型 | 描述  | 是否必需 |
 | :--------: | :--------:| :--: | :--: |
-| entryPath  | String |  当前入口文件夹的全(绝对)路径   | 是 |
-| outputPath  | String |  生成文件夹的全(绝对)路径   | 是 |
-| *ignoreExpressList (v1.2.2新增)*  | Array | 屏蔽表达式列表 | 是 |
-| replaceExa  | String |  需要解析替换的页面文件的后缀名 | 是 |
+| entry  | String |  当前入口文件夹的全(绝对)路径   | 是 |
+| toPath  | String |  生成文件夹的全(绝对)路径   | 是 |
+| ignoreExpressList | Array | 屏蔽表达式列表 | 否 |
+| replaceExt  | String |  需要解析替换的页面文件的后缀名 | 否 |
 | toExt | String | 指定生成的文件后缀， 若不设置该值，则走默认规则，即根据 `PLATFORM` 判断 | 否 |
 
 ### 示例
@@ -79,12 +82,13 @@ const {
     htmlTransform
 } = require('@ftf/gulp-vapp-transform')
 
-const htmlTask = () => htmlTransform(entryPath, distPath, [], 'jxml')()
+const htmlTask = () => htmlTransform({ entry, toPath, replaceExt: 'jxml' })()
+
 ```
 
 功能：
 
-匹配 `entryPath` 下的所有后缀名为 `jxml` 的文件，如果当前环境变量 `process.env.PLATFORM === 'wx(jd)''` ， 将内部的逻辑转换成 `微信小程序(京东小程序)` 的可执行代码，生成到目标文件夹 `distPath` ，后缀名为 `wxml(jxml)` ；
+匹配 `entry` 下的所有后缀名为 `jxml` 的文件，如果当前环境变量 `process.env.PLATFORM === 'wx(jd)''` ， 将内部的逻辑转换成 `微信小程序(京东小程序)` 的可执行代码，生成到目标文件夹 `toPath` ，后缀名为 `wxml(jxml)` ；
 
 二、配置忽略文件
 
@@ -92,15 +96,14 @@ const htmlTask = () => htmlTransform(entryPath, distPath, [], 'jxml')()
 
 设置屏蔽列表，列表内部每一项表达式都遵循src匹配原则。
 
-如果没有需要忽略的文件，则设置该属性为 `[]`
-
 ``` JavaScript
 const {
     htmlTransform
 } = require('@ftf/gulp-vapp-transform')
 
-const ignoreList = [`!${entryPath}/ignore1/**`, `!${entryPath}/ignore2/**`]
-const htmlTask = () => htmlTransform(entryPath, distPath, ignoreList, 'jxml')()
+const ignoreExpressList = [`!${entry}/ignore1/**`, `!${entry}/ignore2/**`]
+const htmlTask = () => htmlTransform({ entry, toPath, ignoreExpressList, replaceExt: 'jxml' })()
+
 ```
 
 三、手动控制
@@ -112,23 +115,25 @@ const {
     htmlTransform
 } = require('@ftf/gulp-vapp-transform')
 
-// 不根据PLATFORM值判断生成后缀， 根据entryPath 下的 jxml 文件  -> distPath 路径下的 wxml
-const htmlTask = () => htmlTransform(entryPath, distPath, [], 'jxml', 'wxml')()
+// 不根据PLATFORM值判断生成后缀， entry 下的 jxml 文件  -> toPath 路径下的 wxml
+const htmlTask = () => htmlTransform({ entry, toPath, replaceExt: 'jxml', toExt: 'wxml' })()
 ```
 
 ## jsTransform
 
 *`js文件处理task事件:`*
 
-*jsTransform(entryPath, outputPath, ignoreExpressList, openBabel)*
+*jsTransform(entry, toPath, ignoreExpressList, openBabel)*
 
 ### 参数
 
+参数以对象形式传入，注意名称如下：
+
 | 参数      |    类型 | 描述  | 是否必需 |
 | :--------: | :--------:| :--: | :--: |
-| entryPath  | String |  当前入口文件夹的全(绝对)路径   | 是 |
-| outputPath  | String |  生成文件夹的全(绝对)路径   | 是 |
-| *ignoreExpressList (v1.2.2新增)*  | Array | 屏蔽表达式列表 | 是 |
+| entry  | String |  当前入口文件夹的全(绝对)路径   | 是 |
+| toPath  | String |  生成文件夹的全(绝对)路径   | 是 |
+| ignoreExpressList  | Array | 屏蔽表达式列表 | 否 |
 | openBabel  | Boolean |  是否开启babel编译， 默认值为 `false` | 否 |
 
 ### 示例
@@ -140,12 +145,13 @@ const {
     jsTransform
 } = require('@ftf/gulp-vapp-transform')
 
-const jsTask = () => jsTransform(entryPath, distPath)()
+const jsTask = () => jsTransform({ entry, toPath })()
+
 ```
 
 功能：
 
-匹配 `entryPath` 下的所有后缀名为 `js` 的文件，如果当前环境变量 `process.env. PLATFORM === 'wx(jd)'` ，将内部的逻辑转换成 `微信小程序(京东小程序)` 的可执行代码，不进行babel编译， 生成到目标文件夹 `distPath` 。
+匹配 `entry` 下的所有后缀名为 `js` 的文件，如果当前环境变量 `process.env. PLATFORM === 'wx(jd)'` ，将内部的逻辑转换成 `微信小程序(京东小程序)` 的可执行代码，不进行babel编译， 生成到目标文件夹 `toPath` 。
 
 二、配置忽略文件
 
@@ -153,31 +159,32 @@ const jsTask = () => jsTransform(entryPath, distPath)()
 
 设置屏蔽列表，列表内部每一项表达式都遵循src匹配原则。
 
-如果没有需要忽略的文件，则设置该属性为 `[]`
-
 ``` JavaScript
 const {
     jsTransform
 } = require('@ftf/gulp-vapp-transform')
 
-const ignoreList = [`!${entryPath}/ignore1/**`, `!${entryPath}/ignore2/**`]
-const jsTask = () => jsTransform(entryPath, distPath, ignoreList)()
+const ignoreList = [`!${entry}/ignore1/**`, `!${entry}/ignore2/**`]
+const jsTask = () => jsTransform({ entry, toPath, ignoreExpressList: ignoreList })()
+
 ```
 
 ## styleTransform
 
 *`样式文件处理task事件:`*
 
-*styleTransform(entryPath, outputPath, ignoreExpressList, replaceExa, toExt)*
+*styleTransform(entry, toPath, ignoreExpressList, replaceExt, toExt)*
 
 ### 参数
 
+参数以对象形式传入，注意名称如下：
+
 | 参数      |    类型 | 描述  | 是否必需 |
 | :--------: | :--------:| :--: | :--: |
-| entryPath  | String |  当前入口文件夹的全(绝对)路径   | 是 |
-| outputPath  | String |  生成文件夹的全(绝对)路径   | 是 |
-| *ignoreExpressList (v1.2.2新增)*  | Array | 屏蔽表达式列表 | 是 |
-| replaceExa  | String|  需要解析替换的页面文件的后缀名， 当前支持 `scss / jxss / wxss` | 是 |
+| entry  | String |  当前入口文件夹的全(绝对)路径   | 是 |
+| toPath  | String |  生成文件夹的全(绝对)路径   | 是 |
+| ignoreExpressList  | Array | 屏蔽表达式列表 | 否 |
+| replaceExt  | String|  需要解析替换的页面文件的后缀名， 当前支持 `scss / jxss / wxss` | 否 |
 | toExt  | String | 指定生成的文件后缀， 若不设置该值，则走默认规则，即根据 `PLATFORM` 判断 | 否 |
 
 ### 示例
@@ -189,12 +196,12 @@ const {
     styleTransform
 } = require('@ftf/gulp-vapp-transform')
 
-const styleTask = () => styleTransform(entryPath, distPath, [], 'scss')()
+const styleTask = () => styleTransform({ entry, toPath, replaceExt: 'scss' })()
 ```
 
 功能：
 
-匹配 `entryPath` 下的所有后缀名为 `scss` 的文件，如果当前环境变量 `process.env. PLATFORM === 'wx(jd)'` ，后缀名变更为 `wxss(jxss)` ，生成到目标文件夹 `distPath` 。
+匹配 `entry` 下的所有后缀名为 `scss` 的文件，如果当前环境变量 `process.env. PLATFORM === 'wx(jd)'` ，后缀名变更为 `wxss(jxss)` ，生成到目标文件夹 `toPath` 。
 
 二、配置忽略文件
 
@@ -202,15 +209,13 @@ const styleTask = () => styleTransform(entryPath, distPath, [], 'scss')()
 
 设置屏蔽列表，列表内部每一项表达式都遵循src匹配原则。
 
-如果没有需要忽略的文件，则设置该属性为 `[]`
-
 ``` JavaScript
 const {
     styleTransform
 } = require('@ftf/gulp-vapp-transform')
 
-const ignoreList = [`!${entryPath}/ignore1/**`, `!${entryPath}/ignore2/**`]
-const styleTask = () => styleTransform(entryPath, distPath, ignoreList, 'scss')()
+const ignoreList = [`!${entry}/ignore1/**`, `!${entry}/ignore2/**`]
+const styleTask = () => styleTransform({ entry, toPath, ignoreExpressList: ignoreList, replaceExt: 'scss' })()
 ```
 
 三、 手动控制
@@ -222,22 +227,22 @@ const {
     styleTransform
 } = require('@ftf/gulp-vapp-transform')
 
-// 不根据PLATFORM值判断生成后缀， 根据entryPath 下的 scss 文件  -> distPath 路径下的 jxss
-const styleTask = () => styleTransform(entryPath, distPath, [], 'scss', 'jxss')()
+// 不根据PLATFORM值判断生成后缀， 根据entry 下的 scss 文件  -> toPath 路径下的 jxss
+const styleTask = () => styleTransform({ entry, toPath, replaceExt: 'scss', toExt: 'jxss' })()
 ```
 
 ## copyNoChange
 
 *`无修改文件，直接生成到目录。`*
 
-*copyNoChange(entryPath, outputPath)*
+*copyNoChange(entry, toPath)*
 
 ### 参数
 
 | 参数      |    类型 | 描述  | 是否必需 |
 | :--------: | :--------:| :--: | :--: |
-| entryPath  | String |  当前入口文件夹的全(绝对)路径，遵循src匹配原则   | 是 |
-| outputPath  | String |  生成文件夹的全(绝对)路径   | 是 |
+| entry  | String |  当前入口文件夹的全(绝对)路径，遵循src匹配原则   | 是 |
+| toPath  | String |  生成文件夹的全(绝对)路径   | 是 |
 
 ### 示例
 
@@ -250,12 +255,12 @@ const {
  *  !后方的路径都不需要复制，因为前面的task已经将文件生成， 需要原样赋值的为除手动生成之外的文件
  *  更多语法参考gulp匹配规则
  */
-const entryPath = [
+const entry = [
   `${entry}/**`,
   `!${entry}/**/*.js`,
 ]
 
-const jsTask = () => jsTransform(entryPath, distPath)()
-// copy 文件到路径distPath
-const copy = () => copyNoChange(entryPath, distPath)()
+const jsTask = () => jsTransform({ entry, toPath })()
+// copy 文件到路径toPath
+const copy = () => copyNoChange(entry, toPath)()
 ```
