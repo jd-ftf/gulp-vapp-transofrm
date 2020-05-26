@@ -59,7 +59,7 @@ exports.dev = series(
 
 *`html页面处理task事件:`*
 
-*htmlTransform(entry, toPath, ignoreExpressList, replaceExt, toExt)*
+*htmlTransform({entry, toPath, ignoreExpressList, replaceExt, toExt})*
 
 ### 参数
 
@@ -123,7 +123,7 @@ const htmlTask = () => htmlTransform({ entry, toPath, replaceExt: 'jxml', toExt:
 
 *`js文件处理task事件:`*
 
-*jsTransform(entry, toPath, ignoreExpressList, openBabel)*
+*jsTransform({entry, toPath, ignoreExpressList, openBabel})*
 
 ### 参数
 
@@ -173,7 +173,7 @@ const jsTask = () => jsTransform({ entry, toPath, ignoreExpressList: ignoreList 
 
 *`样式文件处理task事件:`*
 
-*styleTransform(entry, toPath, ignoreExpressList, replaceExt, toExt)*
+*styleTransform({entry, toPath, ignoreExpressList, replaceExt, toExt})*
 
 ### 参数
 
