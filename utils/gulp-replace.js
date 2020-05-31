@@ -18,10 +18,11 @@ module.exports = (replaceStr, str) => {
     }
 
     try {
-      // 读取file文件夹下的元代码     
+      // 读取file文件夹下的元代码
       const { ext } = path.parse(file.basename)
       let code = file.contents.toString()
 
+      // 后缀js
       if (ext === '.js') {
         const result = transform(code, {
           plugins: [function () {
