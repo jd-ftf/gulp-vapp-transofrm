@@ -1,0 +1,9 @@
+<!--首页 index.jxml-->
+<view class="page">
+	<view class="inline" jd:if="{{ true }}">京东小程序转微信小程序模板</view>
+	<view class="page__desc">组件库推荐使用wot-design-mini~</view>
+	<demo title="组件标题"> hello world 组件内容 </demo>
+	<hello></hello>
+  <view class="light">111</view>
+  <view class="bold">222</view>
+</view>

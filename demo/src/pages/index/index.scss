@@ -1,0 +1,32 @@
+@import '../../static/font/font.scss';
+
+.logo {
+  display: inline-block;
+  width: 40px;
+  height: 40px;
+  margin-right: 10px;
+  background: url("https://img10.360buyimg.com/jmadvertisement/jfs/t1/82922/30/10408/3741/5d80773eEdb7b4adc/146728fcc132a4e0.png")
+    no-repeat;
+  background-size: cover;
+  vertical-align: middle;
+}
+.inline {
+  display: inline-block;
+  vertical-align: middle;
+  z-index: 99;
+}
+.page {
+  width: 100vw;
+  height: 100vh;
+  background-color: #fff;
+  padding: 30px;
+  box-sizing: border-box;
+}
+
+.light {
+  font-family: 'JDZhengHT-Light' !important;
+  font-weight: 700;
+}
+.bold {
+  font-family: 'JDZhengHT-Bold' !important;
+}

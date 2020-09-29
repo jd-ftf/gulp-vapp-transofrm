@@ -264,3 +264,25 @@ const jsTask = () => jsTransform({ entry, toPath })()
 // copy 文件到路径toPath
 const copy = () => copyNoChange(entry, toPath)()
 ```
+
+## 更新日志
+
+### 1.4.2
+
+#### 优化
+
+* styleTransform
+  * 移除ttf文件转base64功能，支持cdn引入字体文件
+
+#### Bug Fix
+
+* styleTransform
+  * 修复z-index层级转换后变为1
+  * 修复无法引入字体文件cdn地址
+
+### 1.4.1
+
+#### Bug Fix
+
+* jsTransform
+  * 修复小程序表单行为 `behavios`  'jd://form-field' 转微信问题。
