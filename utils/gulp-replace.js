@@ -5,7 +5,7 @@ const transform = require('@babel/core').transform
 
 const PLUGIN_NAME = 'gulp-replace'
 
-module.exports = (replaceStr, str) => {
+module.exports = (replaceStr, str, replaceField) => {
   return through.obj((file, enc, cb) => {
     if (!replaceStr || !str) {
       cb(null, file)
@@ -33,6 +33,13 @@ module.exports = (replaceStr, str) => {
                   if (path.node.name === replaceStr) {
                     path.node.name = str
                   }
+                },
+                StringLiteral: function (path) {
+                  replaceField && replaceField.forEach(item => {
+                    if (path.node.value === item.from) {
+                      path.node.value = item.to
+                    }
+                  })
                 }
               }
             }
