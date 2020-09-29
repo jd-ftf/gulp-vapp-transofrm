@@ -1,0 +1,1 @@
+.wd-status-tip{padding:5px 10px;width:100%;margin:0 auto;color:rgba(0,0,0,.45);font-size:14px;box-sizing:border-box}.wd-status-tip__image{margin:0 auto;display:block;width:300px;height:200px}.wd-status-tip__text{margin:20px auto 0;font-size:14px;line-height:16px;color:rgba(0,0,0,.45);text-align:center;word-break:break-all}

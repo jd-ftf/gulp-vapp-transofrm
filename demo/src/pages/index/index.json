@@ -1,0 +1,7 @@
+{
+  "navigationBarTitleText": "vapp to weapp",
+  "usingComponents": {
+    "demo": "../../components/demo/index",
+    "hello": "../../components/hello/index"
+  }
+}
